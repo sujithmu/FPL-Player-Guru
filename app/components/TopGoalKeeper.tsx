@@ -24,6 +24,8 @@ const TopGoalKeeper = ({ goalkeeper }: TopGoalKeeperProps) => {
       <Image
           src={`https://resources.premierleague.com/premierleague/photos/players/250x250/p${goalkeeper.code}.png`}
           alt={`${goalkeeper.first_name} ${goalkeeper.second_name}`}
+          width={100}
+            height={100}
           className="w-24 h-24 rounded-full object-cover mb-2" // Styling for the image
           // onError={(e: any) => {
           //   e.target.onerror = null; // prevent infinite loop

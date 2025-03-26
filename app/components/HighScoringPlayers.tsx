@@ -33,9 +33,18 @@ const HighScoringPlayers = ({ players }: HighScoringPlayersProps) => {
             src={`https://resources.premierleague.com/premierleague/photos/players/250x250/p${firstPlayer.code}.png`}
             alt={`${firstPlayer.first_name} ${firstPlayer.second_name}`}
             className="w-24 h-24 rounded-full object-cover mb-2"
-            onError={(e: any) => {
-              e.target.onerror = null; // prevent infinite loop
-              e.target.src = "/path/to/default/image.png" // Provide a fallback image
+            width={100}
+            height={100}
+            // onError={(e: any) => {
+            //   e.target.onerror = null; // prevent infinite loop
+            //   e.target.src = "/path/to/default/image.png" // Provide a fallback image
+            // }}
+            onError={(e: unknown) => {
+              if (e && e instanceof Event) {
+                const target = e.target as HTMLImageElement;
+                target.onerror = null;
+                target.src = "/path/to/default/image.png"; // Use fallback here
+              }
             }}
           />
           <p>

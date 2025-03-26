@@ -26,6 +26,8 @@ const GoalKing = ({ team }: GoalKingProps) => {
             src={getLogoUrl(team.name.toLocaleLowerCase())}
             alt={`${team.name} Logo`}
             className="w-8 h-8"
+            width={100}
+            height={100}
             // onError={(e: any) => {
             //   e.target.onerror = null; // Prevent infinite loop
             //   e.target.src = "/fallback-logo.png"; // Replace with your fallback logo URL.  Create a public folder and place fallback logo there to avoid any errors

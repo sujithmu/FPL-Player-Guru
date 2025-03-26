@@ -139,6 +139,8 @@ const InFormPlayers = ({ players }: InFormPlayersProps) => {
                   src={flagUrl}
                   alt={`${player.first_name} ${player.second_name} Flag`}
                   className="w-6 h-4 mr-2"
+                  width={100}
+                  height={100}
                   onError={(e: unknown) => {
                     if (e && e instanceof Event && e.target instanceof HTMLImageElement) {
                       const target = e.target as HTMLImageElement;
