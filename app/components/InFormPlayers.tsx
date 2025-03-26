@@ -1,0 +1,163 @@
+import React, { useState, useEffect } from 'react';
+
+type Player = {
+  element_type: number;
+  first_name: string;
+  second_name: string;
+  total_points: number;
+  team: number;
+  goals_scored: number;
+  saves?: number;
+  clean_sheets?: number;
+  code: number;
+  form: number;
+  points_per_game: string;
+  starts: number;
+  expected_goals: number;
+  expected_assists: number;
+  expected_goal_involvements: number;
+  minutes: number; // Ensure `minutes` is included
+  opta_code?: number; // Add opta_code to Player type
+};
+
+type RankedPlayer = {
+  owner: {
+    altIds: {
+      opta: string;
+    };
+    birth: {
+      country: {
+        isoCode: string;
+      };
+    };
+  };
+};
+
+type InFormPlayersProps = {
+  players: Player[];
+};
+
+const InFormPlayers = ({ players }: InFormPlayersProps) => {
+  const [rankedPlayers, setRankedPlayers] = useState<RankedPlayer[] | undefined>(undefined);
+  const [flagMap, setFlagMap] = useState<Record<string, string>>({}); // Map opta_code to flag URL.  Key is string because the opta id is a string
+
+
+  // Fetch ranked player data
+  useEffect(() => {
+    const fetchRankedPlayers = async () => {
+      try {
+        const response = await fetch(
+          'https://footballapi.pulselive.com/football/stats/ranked/players/goals?page=0&pageSize=50&compSeasons=719&comps=1&compCodeForActivePlayer=EN_PR&altIds=true'
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setRankedPlayers(data.stats.content); //Assuming the ranked data is in data.content
+
+      } catch (error) {
+        console.error('Error fetching ranked players:', error);
+      }
+    };
+
+    fetchRankedPlayers();
+  }, []);
+
+  //Create flagMap
+  useEffect(() => {
+    if (rankedPlayers && rankedPlayers.length > 0) {
+      const newFlagMap: Record<string, string> = {};
+      rankedPlayers.forEach(rankedPlayer => {
+        const optaCode = rankedPlayer.owner.altIds.opta;
+        const isoCode = rankedPlayer.owner.birth.country.isoCode;
+        newFlagMap[optaCode] = `https://resources.premierleague.com/premierleague/flags/${isoCode}.png`;
+      });
+      setFlagMap(newFlagMap);
+    }
+  }, [rankedPlayers]);
+
+  // Calculate a combined "form" score
+  const calculateInFormScore = (player: Player): number => {
+    const pointsPerGame = parseFloat(player.points_per_game);
+    const form = player.form;
+    const expectedGoals = player.expected_goals;
+    const expectedAssists = player.expected_assists;
+    const expectedGoalInvolvements = player.expected_goal_involvements;
+    const minutesPlayed = player.minutes;
+
+    const starts = player.starts;
+
+    // Define weights for each factor.  Adjust as needed.
+    const formWeight = 0.2;
+    const pointsPerGameWeight = 0.2;
+    const startsWeight = 0.1;
+    const expectedGoalsWeight = 0.15;
+    const expectedAssistsWeight = 0.15;
+    const expectedGoalInvolvementsWeight = 0.2;
+
+    // Normalize minutes played
+    const normalizedMinutes = minutesPlayed / 90;
+
+    // Calculate the score
+    const score =
+      (form * formWeight) +
+      (pointsPerGame * pointsPerGameWeight) +
+      (starts > 10 ? (startsWeight * 100) : 0) +  // Check for minimum starts and apply weight or 0
+      (expectedGoals * expectedGoalsWeight) +
+      (expectedAssists * expectedAssistsWeight) +
+      (expectedGoalInvolvements * expectedGoalInvolvementsWeight);
+
+    return score;
+  };
+
+  // Filter and sort players based on combined "form" score
+  const inFormPlayers = players
+    .filter(
+      (player) =>
+        player.goals_scored > 5 &&
+        player.form >= 4 &&
+        parseFloat(player.points_per_game) >= 5 && // Updated points_per_game
+        player.starts >= 5 && // Updated starts
+        player.expected_goals >= 2 && // Updated expected_goals
+        player.expected_assists >= 2 && // Updated expected_assists
+        player.expected_goal_involvements >= 3 // Updated expected_goal_involvements
+        
+    )
+    .sort((a, b) => calculateInFormScore(b) - calculateInFormScore(a))
+    .slice(0, 10); // Get top 10
+
+  return (
+    <div className="bg-gradient-to-br from-purple-400 to-purple-600 shadow rounded-lg p-6 border-2 border-purple-700 text-white">
+      <h2 className="text-xl font-semibold mb-2">Top 10 In-Form Players (Last 10 Match Weeks)</h2>
+      {inFormPlayers.length > 0 ? (
+        <ol className="list-decimal pl-5">
+          {inFormPlayers.map((player) => {
+            const optaCode = player.code.toString(); // player.code is a number, opta_code is a string so convert here.
+            const flagUrl = flagMap['p'+optaCode];
+
+            return (
+              <li key={`${player.first_name}-${player.second_name}`} className="py-1 flex items-center">
+                {flagUrl && (
+                  <img
+                    src={flagUrl}
+                    alt={`${player.first_name} ${player.second_name} Flag`}
+                    className="w-6 h-4 mr-2"
+                    onError={(e: any) => {
+                      e.target.onerror = null;
+                      e.target.src = "/fallback-flag.png"; //Use fallback here
+                    }}
+                  />
+                )}
+                {player.first_name} {player.second_name} - Form Score: {calculateInFormScore(player).toFixed(2)}
+              </li>
+            );
+          })}
+        </ol>
+      ) : (
+        <p>No players meet the in-form criteria.</p>
+      )}
+    </div>
+  );
+};
+
+export default InFormPlayers;
