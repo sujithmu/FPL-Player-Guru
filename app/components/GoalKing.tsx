@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 type Team = {
   id: number;
   name: string;
@@ -20,7 +22,7 @@ const GoalKing = ({ team }: GoalKingProps) => {
         <div className="flex items-center">
 
           <p className="text-lg mr-2">{team.name}</p> {/* Positioned before the logo */}
-          <img
+          <Image
             src={getLogoUrl(team.name.toLocaleLowerCase())}
             alt={`${team.name} Logo`}
             className="w-8 h-8"

@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image'
 
 type Player = {
   element_type: number;
@@ -28,7 +29,7 @@ const HighScoringPlayers = ({ players }: HighScoringPlayersProps) => {
       {firstPlayer && (
         <div className="mb-4">
           <h3 className="font-semibold">#1 Player:</h3>
-          <img
+          <Image
             src={`https://resources.premierleague.com/premierleague/photos/players/250x250/p${firstPlayer.code}.png`}
             alt={`${firstPlayer.first_name} ${firstPlayer.second_name}`}
             className="w-24 h-24 rounded-full object-cover mb-2"

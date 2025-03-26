@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image'
 
 type Player = {
   element_type: number;
@@ -83,7 +84,6 @@ const InFormPlayers = ({ players }: InFormPlayersProps) => {
     const expectedGoals = player.expected_goals;
     const expectedAssists = player.expected_assists;
     const expectedGoalInvolvements = player.expected_goal_involvements;
-    const minutesPlayed = player.minutes;
 
     const starts = player.starts;
 
@@ -94,9 +94,6 @@ const InFormPlayers = ({ players }: InFormPlayersProps) => {
     const expectedGoalsWeight = 0.15;
     const expectedAssistsWeight = 0.15;
     const expectedGoalInvolvementsWeight = 0.2;
-
-    // Normalize minutes played
-    const normalizedMinutes = minutesPlayed / 90;
 
     // Calculate the score
     const score =
@@ -138,15 +135,18 @@ const InFormPlayers = ({ players }: InFormPlayersProps) => {
             return (
               <li key={`${player.first_name}-${player.second_name}`} className="py-1 flex items-center">
                 {flagUrl && (
-                  <img
-                    src={flagUrl}
-                    alt={`${player.first_name} ${player.second_name} Flag`}
-                    className="w-6 h-4 mr-2"
-                    onError={(e: any) => {
-                      e.target.onerror = null;
-                      e.target.src = "/fallback-flag.png"; //Use fallback here
-                    }}
-                  />
+                  <Image
+                  src={flagUrl}
+                  alt={`${player.first_name} ${player.second_name} Flag`}
+                  className="w-6 h-4 mr-2"
+                  onError={(e: unknown) => {
+                    if (e && e instanceof Event && e.target instanceof HTMLImageElement) {
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null;
+                      target.src = "/fallback-flag.png"; // Use fallback here
+                    }
+                  }}
+                />
                 )}
                 {player.first_name} {player.second_name} - Form Score: {calculateInFormScore(player).toFixed(2)}
               </li>

@@ -94,7 +94,11 @@ export async function GET() {
     };
 
     return NextResponse.json(analysisResults);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    let errorMessage = 'An error occurred while fetching jobs.';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
