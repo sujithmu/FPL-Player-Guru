@@ -42,10 +42,12 @@ const InFormPlayers = ({ players }: InFormPlayersProps) => {
   const [rankedPlayers, setRankedPlayers] = useState<RankedPlayer[] | undefined>(undefined);
   const [flagMap, setFlagMap] = useState<Record<string, string>>({});
   const [isFlagMapReady, setIsFlagMapReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Fetch ranked player data
   useEffect(() => {
     const fetchRankedPlayers = async () => {
+      setIsLoading(true);
       try {
         const response = await fetch('/api/ranked-players'); // Updated URL
         if (!response.ok) {
@@ -55,6 +57,8 @@ const InFormPlayers = ({ players }: InFormPlayersProps) => {
         setRankedPlayers(data.stats.content); // Or data, depending on the structure
       } catch (error) {
         console.error('Error fetching ranked players:', error);
+      } finally {
+        setIsLoading(false); // Set loading to false after fetch completes (success or error)
       }
     };
 
@@ -123,7 +127,10 @@ const InFormPlayers = ({ players }: InFormPlayersProps) => {
   return (
     <div className="bg-gradient-to-br from-purple-400 to-purple-600 shadow rounded-lg p-6 border-2 border-purple-700 text-white">
       <h2 className="text-xl font-semibold mb-2">Top 10 In-Form Players (Last 10 Match Weeks)</h2>
-      {inFormPlayers.length > 0 && isFlagMapReady ? (
+
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : inFormPlayers.length > 0 && isFlagMapReady ? (
         <ol className="list-decimal pl-5">
           {inFormPlayers.map((player) => {
             const optaCode = player.code.toString();
