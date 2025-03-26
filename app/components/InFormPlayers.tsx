@@ -40,22 +40,19 @@ type InFormPlayersProps = {
 
 const InFormPlayers = ({ players }: InFormPlayersProps) => {
   const [rankedPlayers, setRankedPlayers] = useState<RankedPlayer[] | undefined>(undefined);
-  const [flagMap, setFlagMap] = useState<Record<string, string>>({}); // Map opta_code to flag URL.  Key is string because the opta id is a string
-
+  const [flagMap, setFlagMap] = useState<Record<string, string>>({});
+  const [isFlagMapReady, setIsFlagMapReady] = useState(false);
 
   // Fetch ranked player data
   useEffect(() => {
     const fetchRankedPlayers = async () => {
       try {
-        const response = await fetch(
-          'https://footballapi.pulselive.com/football/stats/ranked/players/goals?page=0&pageSize=50&compSeasons=719&comps=1&compCodeForActivePlayer=EN_PR&altIds=true'
-        );
+        const response = await fetch('/api/ranked-players'); // Updated URL
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        setRankedPlayers(data.stats.content); //Assuming the ranked data is in data.content
-
+        setRankedPlayers(data.stats.content); // Or data, depending on the structure
       } catch (error) {
         console.error('Error fetching ranked players:', error);
       }
@@ -74,6 +71,7 @@ const InFormPlayers = ({ players }: InFormPlayersProps) => {
         newFlagMap[optaCode] = `https://resources.premierleague.com/premierleague/flags/${isoCode}.png`;
       });
       setFlagMap(newFlagMap);
+      setIsFlagMapReady(true);
     }
   }, [rankedPlayers]);
 
@@ -107,7 +105,6 @@ const InFormPlayers = ({ players }: InFormPlayersProps) => {
     return score;
   };
 
-  // Filter and sort players based on combined "form" score
   const inFormPlayers = players
     .filter(
       (player) =>
@@ -126,10 +123,10 @@ const InFormPlayers = ({ players }: InFormPlayersProps) => {
   return (
     <div className="bg-gradient-to-br from-purple-400 to-purple-600 shadow rounded-lg p-6 border-2 border-purple-700 text-white">
       <h2 className="text-xl font-semibold mb-2">Top 10 In-Form Players (Last 10 Match Weeks)</h2>
-      {inFormPlayers.length > 0 ? (
+      {inFormPlayers.length > 0 && isFlagMapReady ? (
         <ol className="list-decimal pl-5">
           {inFormPlayers.map((player) => {
-            const optaCode = player.code.toString(); // player.code is a number, opta_code is a string so convert here.
+            const optaCode = player.code.toString();
             const flagUrl = flagMap['p'+optaCode];
 
             return (
