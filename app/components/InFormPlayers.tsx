@@ -114,11 +114,11 @@ const InFormPlayers = ({ players }: InFormPlayersProps) => {
       (player) =>
         player.goals_scored > 5 &&
         player.form >= 4 &&
-        parseFloat(player.points_per_game) >= 5 && // Updated points_per_game
-        player.starts >= 5 && // Updated starts
+        parseFloat(player.points_per_game) >= 4 && // Updated points_per_game
+        player.starts >= 4 && // Updated starts
         player.expected_goals >= 2 && // Updated expected_goals
         player.expected_assists >= 2 && // Updated expected_assists
-        player.expected_goal_involvements >= 3 // Updated expected_goal_involvements
+        player.expected_goal_involvements >= 2 // Updated expected_goal_involvements
         
     )
     .sort((a, b) => calculateInFormScore(b) - calculateInFormScore(a))
